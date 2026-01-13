@@ -13,9 +13,10 @@ public class PresentTimeHandler implements RequestHandler<APIGatewayProxyRequest
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         String now = LocalDateTime.now().toString();
+        String nowDate = LocalDate.now().toString();
         return new APIGatewayProxyResponseEvent()
                 .withStatusCode(200)
                 .withHeaders(Map.of("Content-Type", "application/json"))
-                .withBody(String.format("{\"now\": \"%s\"}", now));
+                .withBody(String.format("{\"nowDate\": \"%s\"}", nowDate));
     }
 }
