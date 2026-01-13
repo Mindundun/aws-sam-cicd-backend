@@ -1,0 +1,61 @@
+name: Deploy to AWS Lambda (Gradle)
+
+on:
+  push:
+    branches: [ "main" ]  # main에 코드 합쳐지면 배포 실행
+  pull_request:
+    branches: [ "main" ]  # PR 올라오면 빌드 테스트만 실행
+
+env:
+  AWS_REGION: ap-northeast-2
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 코드 가져오기
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      # 자바 환경 설정 (AWS 배포이므로, AWS Corretto 권장)
+      - name: Set up JDK 17 (AWS Corretto)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      # AWS SAM CLI 설치
+      - name: Set up AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      # Gradle 실행 권한 부여
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x PresentTimeFunction/gradlew
+
+      # 유닛 테스트 실행
+      - name: Run Unit Tests with Gradle
+        run: |
+          cd PresentTimeFunction
+          ./gradlew test
+
+      # AWS 인증
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # SAM 빌드 (Template 기반 빌드)
+      # 여기서 내부적으로 Gradle을 다시 호출하여 최적화된 빌드를 수행함
+      - name: Build SAM Application
+        run: sam build
+
+      # 배포 (자동화 옵션 적용)
+      # --no-confirm-changeset: 물어보지 말고 배포
+      # --no-fail-on-empty-changeset: 바뀐 게 없어도 에러 아님
+      - name: Deploy to AWS Lambda
+        if: github.event_name == 'push'  # Push할 때만 배포 (PR은 배포 안 함)
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset

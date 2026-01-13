@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  cicd-backend-basic
+  Sample SAM Template for cicd-backend-basic
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 512
+
+Resources:
+
+  PresentTimeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: PresentTimeFunction
+      Handler: com.example.cicd.handler.PresentTimeHandler::handleRequest
+      Runtime: java17
+      Architectures:
+        - x86_64
+      Events:
+        GetNow:
+          Type: Api
+          Properties:
+            Path: /now
+            Method: get
+
+Outputs:
+
+  PresentTimeApi:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/now"
