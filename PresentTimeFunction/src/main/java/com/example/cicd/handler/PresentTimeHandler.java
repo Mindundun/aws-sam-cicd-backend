@@ -2,6 +2,7 @@ package com.example.cicd.handler;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.time.LocalDate;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -17,6 +18,6 @@ public class PresentTimeHandler implements RequestHandler<APIGatewayProxyRequest
         return new APIGatewayProxyResponseEvent()
                 .withStatusCode(200)
                 .withHeaders(Map.of("Content-Type", "application/json"))
-                .withBody(String.format("{\"nowDate\": \"%s\"}", nowDate));
+                .withBody(String.format("{\"now\": \"%s\"}", nowDate));
     }
 }
